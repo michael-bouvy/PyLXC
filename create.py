@@ -38,19 +38,19 @@ container_name = arguments[1]
 lxc_hostname = container_name + ".lxc"
 lxc_path = "/var/lib/lxc/" + container_name
 
-# if os.path.isdir(lxc_path):
-#     print("LXC directory '%s' already exists." % lxc_path)
-#     overwrite = input('Remove existing directory ? y/N')
-#     if str(overwrite).lower() != 'y':
-#         print("Aborting.")
-#         sys.exit(1)
-#     else:
-#         shutil.rmtree(lxc_path)
-#
-# os.mkdir(lxc_path)
-# print("Extracting template ...")
-# archive = tarfile.open(template_archive)
-# archive.extractall(lxc_path)
+if os.path.isdir(lxc_path):
+    print("LXC directory '%s' already exists." % lxc_path)
+    overwrite = input('Remove existing directory ? y/N')
+    if str(overwrite).lower() != 'y':
+        print("Aborting.")
+        sys.exit(1)
+    else:
+        shutil.rmtree(lxc_path)
+
+os.mkdir(lxc_path)
+print("Extracting template ...")
+archive = tarfile.open(template_archive)
+archive.extractall(lxc_path)
 
 ipv4_last_bytes = []
 hosts = open("/etc/hosts", "r+")
