@@ -1,3 +1,5 @@
+''' This script must be executed by Python3 '''
+
 import sys
 from datetime import date
 import lxc
@@ -13,6 +15,7 @@ lxc_ipv4_prefix = "10.0.3."
 lxc_ipv4_mask = "24"
 lxc_arch = "amd64"
 lxc_net_if = "lxcbr0"
+lxc_root = "/lxc"
 
 current_uid = os.getuid()
 if current_uid != 0:
@@ -36,7 +39,7 @@ if not tarfile.is_tarfile(template_archive):
 
 container_name = arguments[1]
 lxc_hostname = container_name + ".lxc"
-lxc_path = "/var/lib/lxc/" + container_name
+lxc_path = lxc_root + "/" + container_name
 
 if os.path.isdir(lxc_path):
     print("LXC directory '%s' already exists." % lxc_path)
@@ -72,8 +75,12 @@ lxc_mac_address = lxc_mac_prefix + mac_last_group
 lxc_ipv4 = lxc_ipv4_prefix + str(ipv4_last_byte)
 lxc_ipv4_with_mask = lxc_ipv4 + "/" + lxc_ipv4_mask
 
-config_path = lxc_path + '/config'
+lxc_config_dir = "/var/lib/lxc/" + container_name
+os.mkdir(lxc_config_dir)
+
+config_path = lxc_config_dir + '/config'
 shutil.copyfile(lxc_config_template, config_path)
+''' TODO: Remove .lxc suffit from LXC name and add it to search domain in resolv.conf '''
 utils.replaceAll(config_path, '{{CONTAINER_NAME}}', container_name)
 utils.replaceAll(config_path, '{{IPV4}}', lxc_ipv4)
 utils.replaceAll(config_path, '{{NET_IF}}', lxc_net_if)
@@ -83,7 +90,7 @@ utils.replaceAll(config_path, '{{ARCH}}', lxc_arch)
 hosts.write(lxc_ipv4 + " " + lxc_hostname + " # Auto-generated on %s.\n" % date.today())
 hosts.close()
 
-lxc_hostname_file = open(lxc_path + "/rootfs/etc/hostname", "w")
+lxc_hostname_file = open(lxc_path + "/etc/hostname", "w")
 lxc_hostname_file.write(lxc_hostname + "\n")
 lxc_hostname_file.close()
 
@@ -104,3 +111,4 @@ print("Running apt-get update ...")
 c.attach_wait(lxc.attach_run_command, ["apt-get", "update"])
 
 print("All done !")
+
